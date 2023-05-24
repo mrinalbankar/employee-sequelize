@@ -45,6 +45,24 @@ sequelize.sync()
     console.log('Unable to create table : ', error);
   })
 
+//routes
+app.post('/create', async (req, res) => {
+  await Employee.create(req.body)
+    .then((data) => res.json(data))
+    .catch((error) => res.status(400).send(error))
+})
+
+app.post('/contact', async (req, res) => {
+  await Contact.create({
+    emergencyContact: req.body.emergencyContact,
+    number: req.body.number,
+    relationship: req.body.relationship,
+    employeeId: req.body.employeeId
+  })
+    .then((data) => res.json(data))
+    .catch((error) => res.status(400).send(error))
+})
+
 const PORT = process.env.PORT || 5050
 
 app.listen(
