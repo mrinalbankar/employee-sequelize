@@ -59,21 +59,44 @@ app.post('/contact', async (req, res) => {
     relationship: req.body.relationship,
     employeeId: req.body.employeeId
   })
-    .then((data) => res.json(data))
+    .then((data) => res.status(200).json(data))
     .catch((error) => res.status(400).send(error))
 })
 
 app.get('/employee/:id', async (req, res) => {
   const id = req.params.id
   await Employee.findByPk(id, { include: Contact })
-    .then((data) => res.json(data))
+    .then((data) => res.status(200).json(data))
     .catch((error) => res.status(400).send(error))
 })
 
 app.get('/employees', async (req, res) => {
-  await Employee.findAll({ limit: 1, offset: 0, include: Contact })
-    .then((data) => res.json(data))
+  await Employee.findAll({ limit: 2, offset: 0, include: Contact })
+    .then((data) => res.status(200).json(data))
     .catch((error) => res.status(400).send(error))
+})
+
+app.put('/update/:id', async (req, res) => {
+  const id = req.params.id
+  await Employee.update({
+    fullname: req.body.fullname,
+    jobtitle: req.body.jobtitle,
+    phonenumber: req.body.phonenumber,
+    email: req.body.email,
+    address: req.body.address,
+    city: req.body.city,
+    state: req.body.state
+  },
+    { where: { id: id } })
+    .then((data) => res.status(200).json(data))
+    .catch((error) => res.status(400).send(error))
+})
+
+app.delete('/delete/:id', async (req, res) =>{
+  const id = req.params.id
+  await Employee.destroy({ where: { id: id } })
+  .then((data) => res.status(200).send("employee deleted"))
+  .catch((error) => res.status(400).send(error))
 })
 
 const PORT = process.env.PORT || 5050
