@@ -63,6 +63,19 @@ app.post('/contact', async (req, res) => {
     .catch((error) => res.status(400).send(error))
 })
 
+app.get('/employee/:id', async (req, res) => {
+  const id = req.params.id
+  await Employee.findByPk(id, { include: Contact })
+    .then((data) => res.json(data))
+    .catch((error) => res.status(400).send(error))
+})
+
+app.get('/employees', async (req, res) => {
+  await Employee.findAll({ limit: 1, offset: 0, include: Contact })
+    .then((data) => res.json(data))
+    .catch((error) => res.status(400).send(error))
+})
+
 const PORT = process.env.PORT || 5050
 
 app.listen(
