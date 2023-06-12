@@ -45,6 +45,7 @@ sequelize.sync()
     console.log('Unable to create table : ', error);
   })
 
+
 //registered routes
 //create only employee (one at a time)
 app.post('/create', async (req, res) => {
@@ -65,7 +66,7 @@ app.post('/contact', async (req, res) => {
     .catch((error) => res.status(400).send(error))
 })
 
-//find employee with its contacts
+//find employee by id with its contacts
 app.get('/employee/:id', async (req, res) => {
   const id = req.params.id
   await Employee.findByPk(id, { include: Contact })
@@ -80,7 +81,7 @@ app.get('/employees', async (req, res) => {
     .catch((error) => res.status(400).send(error))
 })
 
-//update only employee
+//update employee
 app.put('/update/:id', async (req, res) => {
   const id = req.params.id
   await Employee.update({
@@ -97,6 +98,7 @@ app.put('/update/:id', async (req, res) => {
     .catch((error) => res.status(400).send(error))
 })
 
+//delete employee
 app.delete('/delete/:id', async (req, res) =>{
   const id = req.params.id
   await Employee.destroy({ where: { id: id } })
