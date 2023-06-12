@@ -47,10 +47,39 @@ sequelize.sync()
 
 
 //registered routes
-//create only employee (one at a time)
+//create employee with contacts array
 app.post('/create', async (req, res) => {
-  await Employee.create(req.body)
-    .then((data) => res.json(data))
+  await Employee.create({
+    fullname: req.body.fullname,
+    jobtitle: req.body.jobtitle,
+    phonenumber: req.body.phonenumber,
+    email: req.body.email,
+    address: req.body.address,
+    city: req.body.city,
+    state: req.body.state
+  })
+    .then((data) => {
+      // console.log(data.id)
+      let allContacts = []
+      for (let i = 0; i < req.body.contacts.length; i++) {
+        var getContact = {
+          emergencyContact: req.body.contacts[i].emergencyContact,
+          number: req.body.contacts[i].number,
+          relationship: req.body.contacts[i].relationship,
+          employeeId: data.id
+        }
+        allContacts.push(getContact)
+        console.log(allContacts)
+      }
+      Contact.bulkCreate(allContacts, { returning: true })
+        .then((contacts) =>
+          res.status(200).send({ data, contacts })
+        )
+        .catch((error) => {
+          console.log(error)
+          res.status(400).send(error)
+        })
+    })
     .catch((error) => res.status(400).send(error))
 })
 
@@ -76,7 +105,15 @@ app.get('/employee/:id', async (req, res) => {
 
 //find all employees with their contacts
 app.get('/employees', async (req, res) => {
-  await Employee.findAll({ limit: 2, offset: 0, include: Contact })
+  let limit = parseInt(req.query.limit)
+  let offset = parseInt(req.query.offset)
+  // await Employee.findAll({ limit: 2, offset: 0, include: Contact })
+  await Employee.findAll({
+    subQuery: false,
+    include: [{ model: Contact, as: 'contacts', separate: true }],
+    limit: limit || 0,
+    offset: offset || 0
+  })
     .then((data) => res.status(200).json(data))
     .catch((error) => res.status(400).send(error))
 })
@@ -99,11 +136,11 @@ app.put('/update/:id', async (req, res) => {
 })
 
 //delete employee
-app.delete('/delete/:id', async (req, res) =>{
+app.delete('/delete/:id', async (req, res) => {
   const id = req.params.id
   await Employee.destroy({ where: { id: id } })
-  .then((data) => res.status(200).send("employee deleted"))
-  .catch((error) => res.status(400).send(error))
+    .then((data) => res.status(200).send("employee deleted"))
+    .catch((error) => res.status(400).send(error))
 })
 
 const PORT = process.env.PORT || 5050
